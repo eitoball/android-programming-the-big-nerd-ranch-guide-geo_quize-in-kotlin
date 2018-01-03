@@ -43,7 +43,10 @@ class QuizActivity : AppCompatActivity() {
         mFalseButton?.setOnClickListener { checkAnswer(false) }
 
         mNextButton = findViewById(R.id.next_button) as Button
-        mNextButton?.setOnClickListener { updateQuestion() }
+        mNextButton?.setOnClickListener {
+            mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.size
+            updateQuestion()
+        }
 
         updateQuestion()
     }
@@ -75,7 +78,6 @@ class QuizActivity : AppCompatActivity() {
     }
     private fun updateQuestion() {
         Log.d(TAG, "Current question index: $mCurrentIndex")
-        mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.size
         try {
             val question = mQuestionBank[mCurrentIndex]
             mQuestionTextView?.setText(question.textResId)
