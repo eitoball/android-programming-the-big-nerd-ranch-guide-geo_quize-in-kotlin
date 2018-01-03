@@ -10,9 +10,12 @@ import android.widget.TextView
 import android.widget.Toast
 
 class QuizActivity : AppCompatActivity() {
-    private val TAG = "QuizActivity"
-    private val KEY_INDEX = "index"
-    private val REQUEST_CODE_CHEAT = 0
+    companion object {
+        private val TAG = "QuizActivity"
+        private val KEY_INDEX = "index"
+        private val KEY_CHEATER = "cheat"
+        private val REQUEST_CODE_CHEAT = 0
+    }
 
     private var mTrueButton: Button? = null
     private var mFalseButton: Button? = null
@@ -36,6 +39,7 @@ class QuizActivity : AppCompatActivity() {
         setContentView(R.layout.activity_quiz)
 
         mCurrentIndex = savedInstanceState?.getInt(KEY_INDEX, 0) ?: 0
+        mIsCheater = savedInstanceState?.getBoolean(KEY_CHEATER, false) ?: false
 
         mQuestionTextView = findViewById(R.id.question_text_view) as TextView
 
@@ -47,7 +51,6 @@ class QuizActivity : AppCompatActivity() {
         mNextButton = findViewById(R.id.next_button) as Button
         mNextButton?.setOnClickListener {
             mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.size
-            mIsCheater = false
             updateQuestion()
         }
         mCheatButton = findViewById(R.id.cheat_button) as Button
@@ -84,6 +87,7 @@ class QuizActivity : AppCompatActivity() {
         super.onSaveInstanceState(outState)
         Log.i(TAG, "onSaveInstanceState")
         outState?.putInt(KEY_INDEX, mCurrentIndex)
+        outState?.putBoolean(KEY_CHEATER, mIsCheater)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
