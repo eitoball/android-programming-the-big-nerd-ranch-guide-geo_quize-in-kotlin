@@ -1,24 +1,21 @@
 package org.eitoball.geoquiz
 
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
-import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-import java.time.Duration
 
 class QuizActivity : AppCompatActivity() {
-    val TAG = "QuizActivity"
-    val KEY_INDEX = "index"
+    private val TAG = "QuizActivity"
+    private val KEY_INDEX = "index"
 
-    var mTrueButton: Button? = null
-    var mFalseButton: Button? = null
-    var mNextButton: Button? = null
-    var mQuestionTextView: TextView? = null
-    val mQuestionBank = listOf(
+    private var mTrueButton: Button? = null
+    private var mFalseButton: Button? = null
+    private var mNextButton: Button? = null
+    private var mQuestionTextView: TextView? = null
+    private val mQuestionBank = listOf(
             Question(R.string.question_australia, true),
             Question(R.string.question_oceans, true),
             Question(R.string.question_mideast, false),
@@ -79,14 +76,18 @@ class QuizActivity : AppCompatActivity() {
         try {
             val question = mQuestionBank[mCurrentIndex]
             mQuestionTextView?.setText(question.textResId)
+            listOf(mTrueButton, mFalseButton).forEach {
+                it?.isEnabled = !question.answered
+            }
         } catch (e: ArrayIndexOutOfBoundsException) {
             Log.e(TAG, "Index was out of bounds", e)
         }
     }
 
     private fun checkAnswer(userPressedTrue: Boolean) {
-        val answerIsTrue = mQuestionBank[mCurrentIndex].answerType
-        val messageResId = if (userPressedTrue == answerIsTrue) {
+        var question = mQuestionBank[mCurrentIndex]
+        question.answered = true
+        val messageResId = if (userPressedTrue == question.answerType) {
             R.string.correct_toast
         } else {
             R.string.incorrect_toast
