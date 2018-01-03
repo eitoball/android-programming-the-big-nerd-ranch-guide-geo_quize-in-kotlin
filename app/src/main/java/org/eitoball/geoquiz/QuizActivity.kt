@@ -1,24 +1,25 @@
 package org.eitoball.geoquiz
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
-import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-import java.time.Duration
 
 class QuizActivity : AppCompatActivity() {
-    val TAG = "QuizActivity"
-    val KEY_INDEX = "index"
+    private val TAG = "QuizActivity"
+    private val KEY_INDEX = "index"
+    private val REQUEST_CODE_CHEAT = 0
 
-    var mTrueButton: Button? = null
-    var mFalseButton: Button? = null
-    var mNextButton: Button? = null
-    var mQuestionTextView: TextView? = null
-    val mQuestionBank = listOf(
+    private var mTrueButton: Button? = null
+    private var mFalseButton: Button? = null
+    private var mNextButton: Button? = null
+    private var mCheatButton: Button? = null
+    private var mQuestionTextView: TextView? = null
+    private val mQuestionBank = listOf(
             Question(R.string.question_australia, true),
             Question(R.string.question_oceans, true),
             Question(R.string.question_mideast, false),
@@ -26,7 +27,8 @@ class QuizActivity : AppCompatActivity() {
             Question(R.string.question_americas, false),
             Question(R.string.question_asia, false)
     )
-    var mCurrentIndex = 0
+    private var mCurrentIndex = 0
+    private var mIsCheater = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,7 +47,14 @@ class QuizActivity : AppCompatActivity() {
         mNextButton = findViewById(R.id.next_button) as Button
         mNextButton?.setOnClickListener {
             mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.size
+            mIsCheater = false
             updateQuestion()
+        }
+        mCheatButton = findViewById(R.id.cheat_button) as Button
+        mCheatButton?.setOnClickListener {
+            val answerIsTrue = mQuestionBank[mCurrentIndex].answerType
+            val intent = CheatActivity.newIntent(this, answerIsTrue)
+            startActivityForResult(intent, REQUEST_CODE_CHEAT)
         }
 
         updateQuestion()
@@ -76,6 +85,19 @@ class QuizActivity : AppCompatActivity() {
         Log.i(TAG, "onSaveInstanceState")
         outState?.putInt(KEY_INDEX, mCurrentIndex)
     }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (resultCode != Activity.RESULT_OK) {
+            return
+        }
+        if (requestCode == REQUEST_CODE_CHEAT) {
+            if (data == null) {
+                return
+            }
+            mIsCheater = CheatActivity.wasAnswerShown(data)
+        }
+    }
+
     private fun updateQuestion() {
         Log.d(TAG, "Current question index: $mCurrentIndex")
         try {
@@ -88,10 +110,14 @@ class QuizActivity : AppCompatActivity() {
 
     private fun checkAnswer(userPressedTrue: Boolean) {
         val answerIsTrue = mQuestionBank[mCurrentIndex].answerType
-        val messageResId = if (userPressedTrue == answerIsTrue) {
-            R.string.correct_toast
+        val messageResId = if (mIsCheater) {
+            R.string.judgment_toast
         } else {
-            R.string.incorrect_toast
+            if (userPressedTrue == answerIsTrue) {
+                R.string.correct_toast
+            }  else {
+                R.string.incorrect_toast
+            }
         }
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show()
     }
