@@ -12,6 +12,7 @@ import android.widget.Toast
 class QuizActivity : AppCompatActivity() {
     private val TAG = "QuizActivity"
     private val KEY_INDEX = "index"
+    private val KEY_CHEAT_TOKEN = "cheatToken"
     private val REQUEST_CODE_CHEAT = 0
 
     private var mTrueButton: Button? = null
@@ -28,7 +29,7 @@ class QuizActivity : AppCompatActivity() {
             Question(R.string.question_asia, false)
     )
     private var mCurrentIndex = 0
-    private var mIsCheater = false
+    private var mCheatToken = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,6 +37,7 @@ class QuizActivity : AppCompatActivity() {
         setContentView(R.layout.activity_quiz)
 
         mCurrentIndex = savedInstanceState?.getInt(KEY_INDEX, 0) ?: 0
+        mCheatToken = savedInstanceState?.getInt(KEY_CHEAT_TOKEN, 3) ?: 3
 
         mQuestionTextView = findViewById(R.id.question_text_view) as TextView
 
@@ -47,13 +49,12 @@ class QuizActivity : AppCompatActivity() {
         mNextButton = findViewById(R.id.next_button) as Button
         mNextButton?.setOnClickListener {
             mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.size
-            mIsCheater = false
             updateQuestion()
         }
         mCheatButton = findViewById(R.id.cheat_button) as Button
         mCheatButton?.setOnClickListener {
             val answerIsTrue = mQuestionBank[mCurrentIndex].answerType
-            val intent = CheatActivity.newIntent(this, answerIsTrue)
+            val intent = CheatActivity.newIntent(this, answerIsTrue, mCheatToken)
             startActivityForResult(intent, REQUEST_CODE_CHEAT)
         }
 
@@ -84,6 +85,7 @@ class QuizActivity : AppCompatActivity() {
         super.onSaveInstanceState(outState)
         Log.i(TAG, "onSaveInstanceState")
         outState?.putInt(KEY_INDEX, mCurrentIndex)
+        outState?.putInt(KEY_CHEAT_TOKEN, mCheatToken)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -94,7 +96,7 @@ class QuizActivity : AppCompatActivity() {
             if (data == null) {
                 return
             }
-            mIsCheater = CheatActivity.wasAnswerShown(data)
+            mCheatToken = CheatActivity.cheatToken(data)
         }
     }
 
@@ -110,14 +112,10 @@ class QuizActivity : AppCompatActivity() {
 
     private fun checkAnswer(userPressedTrue: Boolean) {
         val answerIsTrue = mQuestionBank[mCurrentIndex].answerType
-        val messageResId = if (mIsCheater) {
-            R.string.judgment_toast
+        val messageResId = if (userPressedTrue == answerIsTrue) {
+            R.string.correct_toast
         } else {
-            if (userPressedTrue == answerIsTrue) {
-                R.string.correct_toast
-            }  else {
-                R.string.incorrect_toast
-            }
+            R.string.incorrect_toast
         }
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show()
     }

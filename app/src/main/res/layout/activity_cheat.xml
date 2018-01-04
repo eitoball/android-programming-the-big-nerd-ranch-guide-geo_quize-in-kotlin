@@ -19,9 +19,19 @@
             android:layout_height="wrap_content"
             android:padding="24dp"
             tools:text="Answer" />
+    <TextView
+        android:id="@+id/cheat_token_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="0" />
     <Button
             android:id="@+id/show_answer_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/show_answer_button"/>
+    <TextView
+            android:id="@+id/api_level_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="API Level n" />
 </LinearLayout>
